@@ -1,7 +1,6 @@
 package com.dicoding.todoapp.data
 
 import android.content.Context
-import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -13,13 +12,12 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.util.concurrent.Executors
 
 //TODO 3 : Define room database class and prepopulate database using JSON
-@Database(entities = [Task::class], version = 1, exportSchema = false)
+@Database(entities = [Task::class], version = 2, exportSchema = false)
 abstract class TaskDatabase : RoomDatabase() {
-
     abstract fun taskDao(): TaskDao
-
     companion object {
 
         @Volatile
@@ -30,12 +28,13 @@ abstract class TaskDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     TaskDatabase::class.java,
-                    "task2.db"
+                    "task3.db"
                 ).addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
-                        val taskDao = getInstance(context).taskDao()
-                        fillWithStartingData(context, taskDao)
+                        Executors.newSingleThreadExecutor().execute{
+                            fillWithStartingData(context, getInstance(context).taskDao())
+                        }
                     }
                 }).build()
                 INSTANCE = instance
